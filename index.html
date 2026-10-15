@@ -32,8 +32,8 @@
             position: absolute;
             inset: 0;
             background: 
-                radial-gradient(circle at 50% 75%, rgba(85, 0, 28, 0.55) 0%, rgba(22, 0, 10, 0.85) 45%, #030006 90%),
-                radial-gradient(circle at 50% 20%, rgba(45, 5, 35, 0.35) 0%, transparent 65%);
+                radial-gradient(circle at 50% 75%, rgba(92, 6, 32, 0.58) 0%, rgba(24, 1, 11, 0.86) 48%, #040007 92%),
+                radial-gradient(circle at 50% 20%, rgba(55, 8, 40, 0.35) 0%, transparent 65%);
             z-index: 0;
         }
 
@@ -55,19 +55,21 @@
             z-index: 3;
         }
 
-        /* === UI & TYPOGRAPHY === */
+        /* === UI & TYPOGRAPHY (MOBILE-PERFECT HUD) === */
         #hud-top {
             position: absolute;
-            top: max(22px, env(safe-area-inset-top, 22px));
+            top: max(18px, env(safe-area-inset-top, 18px));
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 4;
+            gap: 10px;
+            z-index: 6;
             pointer-events: none;
             opacity: 0;
             transition: opacity 1.8s ease;
+            padding: 0 12px;
         }
 
         #hud-top.visible {
@@ -75,37 +77,116 @@
         }
 
         .counter-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            flex-shrink: 0;
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.72rem;
-            letter-spacing: 3px;
+            font-size: clamp(0.62rem, 2.5vw, 0.72rem);
+            letter-spacing: clamp(1.4px, 0.6vw, 2.6px);
             text-transform: uppercase;
-            color: rgba(255, 190, 208, 0.85);
-            background: rgba(20, 2, 10, 0.65);
-            border: 1px solid rgba(255, 77, 121, 0.25);
-            padding: 7px 18px;
+            color: rgba(255, 198, 214, 0.92);
+            background: rgba(24, 3, 12, 0.68);
+            border: 1px solid rgba(255, 90, 135, 0.3);
+            padding: 8px 15px;
+            height: 34px;
             border-radius: 30px;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
+        .counter-num {
+            font-weight: 500;
+            color: #ff85a9;
+            margin-left: 5px;
+        }
+
+        /* Pulsante Audio compatto e sempre su una riga */
+        #audio-toggle {
+            pointer-events: auto;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+            gap: 7px;
+            background: rgba(24, 3, 12, 0.68);
+            border: 1px solid rgba(255, 90, 135, 0.32);
+            color: rgba(255, 198, 214, 0.92);
+            padding: 8px 14px;
+            height: 34px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(0.62rem, 2.5vw, 0.7rem);
+            letter-spacing: clamp(1.3px, 0.5vw, 2px);
+            text-transform: uppercase;
+            transition: border-color 0.3s ease, background 0.3s ease, transform 0.2s ease;
+        }
+
+        #audio-toggle:hover {
+            border-color: rgba(255, 110, 150, 0.65);
+            background: rgba(38, 5, 19, 0.75);
+        }
+
+        #audio-toggle:active {
+            transform: scale(0.94);
+        }
+
+        .sound-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2.5px;
+            height: 11px;
+            flex-shrink: 0;
+        }
+
+        .sound-bars span {
+            width: 2px;
+            background: #ff6b96;
+            border-radius: 2px;
+            height: 3px;
+            transition: height 0.3s ease;
+        }
+
+        #audio-toggle.playing .sound-bars span:nth-child(1) {
+            animation: eqBar 0.95s ease-in-out infinite alternate;
+        }
+        #audio-toggle.playing .sound-bars span:nth-child(2) {
+            animation: eqBar 0.75s ease-in-out 0.2s infinite alternate;
+        }
+        #audio-toggle.playing .sound-bars span:nth-child(3) {
+            animation: eqBar 1.05s ease-in-out 0.4s infinite alternate;
+        }
+
+        @keyframes eqBar {
+            0% { height: 3px; opacity: 0.6; }
+            100% { height: 11px; opacity: 1; }
+        }
+
+        /* Titolo iniziale */
         #main-message {
             position: absolute;
-            top: 15%;
+            top: 14%;
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: clamp(1.45rem, 4.5vw, 2.5rem);
+            font-size: clamp(1.4rem, 4.5vw, 2.5rem);
             font-weight: 400;
-            letter-spacing: 3.5px;
-            text-shadow: 0 0 25px rgba(255, 60, 110, 0.75), 0 4px 15px rgba(0, 0, 0, 0.9);
+            letter-spacing: 3px;
+            text-shadow: 0 0 25px rgba(255, 70, 120, 0.75), 0 4px 15px rgba(0, 0, 0, 0.9);
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 2s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.22, 1, 0.36, 1);
             z-index: 4;
             pointer-events: none;
             padding: 0 24px;
-            color: #fff0f4;
+            color: #fff2f5;
         }
 
         #main-message.show {
@@ -122,32 +203,81 @@
         .sub-hint {
             display: block;
             font-family: 'Montserrat', sans-serif;
-            font-size: clamp(0.68rem, 2.2vw, 0.8rem);
-            letter-spacing: 2.5px;
+            font-size: clamp(0.64rem, 2.1vw, 0.78rem);
+            letter-spacing: 2.2px;
             text-transform: uppercase;
-            color: rgba(255, 150, 180, 0.7);
+            color: rgba(255, 165, 192, 0.75);
             margin-top: 10px;
+        }
+
+        /* === DEDICA FINALE QUANDO TUTTE LE 7 ROSE SONO STATE SVELATE === */
+        #final-message {
+            position: absolute;
+            top: 13.5%;
+            left: 50%;
+            transform: translateX(-50%) translateY(18px) scale(0.92);
+            width: min(92vw, 600px);
+            text-align: center;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2.2s cubic-bezier(0.22, 1, 0.36, 1), transform 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        #final-message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .final-title {
+            display: block;
+            font-size: clamp(1.75rem, 6vw, 2.9rem);
+            font-weight: 600;
+            font-style: italic;
+            letter-spacing: 2px;
+            color: #fff7f9;
+            text-shadow: 
+                0 0 22px rgba(255, 77, 130, 0.9),
+                0 0 48px rgba(255, 25, 85, 0.55),
+                0 4px 16px rgba(0, 0, 0, 0.9);
+            animation: gentleHeartPulse 3.2s ease-in-out infinite alternate;
+        }
+
+        .final-sub {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(0.62rem, 2vw, 0.75rem);
+            letter-spacing: 2.8px;
+            text-transform: uppercase;
+            color: rgba(255, 195, 212, 0.82);
+            margin-top: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes gentleHeartPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 90, 140, 0.3)); }
+            100% { transform: scale(1.035); filter: drop-shadow(0 0 24px rgba(255, 120, 165, 0.75)); }
         }
 
         /* Card del messaggio segreto */
         #popup-message {
             position: fixed;
-            bottom: max(6%, env(safe-area-inset-bottom, 24px));
+            bottom: max(5.5%, env(safe-area-inset-bottom, 22px));
             left: 50%;
             transform: translateX(-50%) translateY(35px) scale(0.94);
-            background: linear-gradient(145deg, rgba(28, 3, 12, 0.88) 0%, rgba(10, 1, 5, 0.95) 100%);
-            border: 1px solid rgba(255, 90, 135, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 22px 32px;
-            border-radius: 36px;
-            font-size: clamp(1.15rem, 4vw, 1.5rem);
+            background: linear-gradient(145deg, rgba(32, 4, 15, 0.9) 0%, rgba(12, 1, 6, 0.96) 100%);
+            border: 1px solid rgba(255, 105, 145, 0.42);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            padding: 20px 26px;
+            border-radius: 30px;
+            font-size: clamp(1.05rem, 3.6vw, 1.4rem);
             font-style: italic;
-            color: #fff2f6;
+            color: #fff4f7;
             box-shadow: 
-                0 20px 50px rgba(0, 0, 0, 0.85), 
-                0 0 35px rgba(255, 35, 95, 0.22),
-                inset 0 1px 1px rgba(255, 255, 255, 0.12);
+                0 20px 50px rgba(0, 0, 0, 0.88), 
+                0 0 38px rgba(255, 45, 105, 0.24),
+                inset 0 1px 1px rgba(255, 255, 255, 0.14);
             opacity: 0;
             pointer-events: none;
             transition: 
@@ -155,8 +285,9 @@
                 transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 6;
             text-align: center;
-            width: min(90vw, 480px);
-            line-height: 1.45;
+            width: min(92vw, 520px);
+            line-height: 1.46;
+            text-wrap: balance;
         }
 
         #popup-message.show {
@@ -166,16 +297,16 @@
 
         .popup-quote {
             display: block;
-            text-shadow: 0 2px 12px rgba(255, 50, 100, 0.35);
+            text-shadow: 0 2px 14px rgba(255, 65, 115, 0.38);
         }
 
         .popup-sub {
             display: block;
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.66rem;
             text-transform: uppercase;
-            letter-spacing: 2.5px;
-            color: #ff5c8a;
+            letter-spacing: 2.2px;
+            color: #ff6b96;
             margin-top: 10px;
             font-style: normal;
             font-weight: 400;
@@ -215,12 +346,26 @@
     <div class="vignette"></div>
 
     <div id="hud-top">
-        <div class="counter-pill">Rose svelate: <span id="discovered-count">0</span> / 7</div>
+        <div class="counter-pill">
+            <span>Rose svelate:</span>
+            <span class="counter-num"><span id="discovered-count">0</span> / 7</span>
+        </div>
+        <button id="audio-toggle" aria-label="Attiva o disattiva audio">
+            <div class="sound-bars">
+                <span></span><span></span><span></span>
+            </div>
+            <span id="audio-label">Suono</span>
+        </button>
     </div>
 
     <div id="main-message">
         raccogli la rosa che vuoi
         <span class="sub-hint">Tocca un bocciolo per svelarne il segreto</span>
+    </div>
+
+    <div id="final-message">
+        <span class="final-title">Ti amo vita mij 🤍🫍</span>
+        <span class="final-sub">Tutte le rose del giardino sono tue</span>
     </div>
 
     <div id="popup-message"></div>
@@ -244,14 +389,305 @@
             ];
 
             const discoveredRoses = new Set();
+            let celebrationPlayed = false;
+            let finalRainActive = false;
+
             const mainMessage = document.getElementById('main-message');
+            const finalMessage = document.getElementById('final-message');
             const popupMessage = document.getElementById('popup-message');
             const hudTop = document.getElementById('hud-top');
             const discoveredCountEl = document.getElementById('discovered-count');
+            const audioToggleBtn = document.getElementById('audio-toggle');
+            const audioLabelEl = document.getElementById('audio-label');
             let popupTimeout = null;
 
             // ============================================================================
-            // 2. INIZIALIZZAZIONE SCENA THREE.JS, CAMERA E LUCI CINEMATOGRAFICHE
+            // 2. MOTORE SONORO DOLCE E ACCOGLIENTE (CARILLON, ARPA MORBIDA & ACCORDI CALDI)
+            // ============================================================================
+            class SecretGardenAudio {
+                constructor() {
+                    this.ctx = null;
+                    this.masterGain = null;
+                    this.reverbNode = null;
+                    this.isMuted = false;
+                    this.ambientStarted = false;
+                    this.chordTimer = null;
+                    this.melodyTimer = null;
+                    this.currentChordIndex = 0;
+
+                    this.warmChords = [
+                        {
+                            pad: [174.61, 220.00, 261.63, 329.63],
+                            melodyPool: [349.23, 440.00, 523.25, 659.25, 783.99]
+                        },
+                        {
+                            pad: [130.81, 196.00, 246.94, 293.66],
+                            melodyPool: [392.00, 493.88, 523.25, 587.33, 659.25]
+                        },
+                        {
+                            pad: [110.00, 164.81, 196.00, 261.63],
+                            melodyPool: [329.63, 392.00, 440.00, 523.25, 659.25]
+                        },
+                        {
+                            pad: [116.54, 174.61, 220.00, 261.63],
+                            melodyPool: [349.23, 440.00, 523.25, 587.33, 698.46]
+                        }
+                    ];
+
+                    this.roseFrequencies = [
+                        349.23, // Rosa 1: Fa4
+                        392.00, // Rosa 2: Sol4
+                        440.00, // Rosa 3: La4
+                        523.25, // Rosa 4 (Centro): Do5
+                        587.33, // Rosa 5: Re5
+                        659.25, // Rosa 6: Mi5
+                        698.46  // Rosa 7: Fa5
+                    ];
+                }
+
+                init() {
+                    if (this.ctx) {
+                        if (this.ctx.state === 'suspended') {
+                            this.ctx.resume();
+                        }
+                        return;
+                    }
+
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+
+                    this.ctx = new AudioCtx();
+
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+                    this.masterGain.connect(this.ctx.destination);
+
+                    this.reverbNode = this.createWarmReverb(3.8, 2.6);
+                    const reverbFilter = this.ctx.createBiquadFilter();
+                    reverbFilter.type = 'lowpass';
+                    reverbFilter.frequency.value = 1800;
+
+                    const reverbGain = this.ctx.createGain();
+                    reverbGain.gain.value = 0.6;
+
+                    this.reverbNode.connect(reverbFilter);
+                    reverbFilter.connect(reverbGain);
+                    reverbGain.connect(this.masterGain);
+
+                    this.startSweetSoundtrack();
+                    this.updateUI(true);
+                }
+
+                createWarmReverb(duration, decay) {
+                    const sampleRate = this.ctx.sampleRate;
+                    const length = sampleRate * duration;
+                    const impulse = this.ctx.createBuffer(2, length, sampleRate);
+
+                    for (let ch = 0; ch < 2; ch++) {
+                        const channelData = impulse.getChannelData(ch);
+                        let lastSample = 0;
+                        for (let i = 0; i < length; i++) {
+                            const env = Math.pow(1 - i / length, decay);
+                            const white = (Math.random() * 2 - 1);
+                            lastSample = (lastSample + (0.12 * white)) / 1.12;
+                            channelData[i] = lastSample * env * 1.4;
+                        }
+                    }
+
+                    const convolver = this.ctx.createConvolver();
+                    convolver.buffer = impulse;
+                    return convolver;
+                }
+
+                startSweetSoundtrack() {
+                    if (!this.ctx || this.ambientStarted) return;
+                    this.ambientStarted = true;
+
+                    this.playWarmPadChord(this.warmChords[0].pad, 6.8);
+
+                    this.chordTimer = setInterval(() => {
+                        if (!this.ctx || this.isMuted || document.hidden) return;
+                        this.currentChordIndex = (this.currentChordIndex + 1) % this.warmChords.length;
+                        const chord = this.warmChords[this.currentChordIndex];
+                        this.playWarmPadChord(chord.pad, 6.8);
+                    }, 6200);
+
+                    this.melodyTimer = setInterval(() => {
+                        if (!this.ctx || this.isMuted || document.hidden) return;
+                        const pool = this.warmChords[this.currentChordIndex].melodyPool;
+                        const freq1 = pool[Math.floor(Math.random() * pool.length)];
+                        const pan1 = (Math.random() - 0.5) * 0.7;
+
+                        this.triggerSoftMusicBoxNote(freq1, this.ctx.currentTime, 0.042, 3.2, pan1);
+
+                        if (Math.random() < 0.45) {
+                            const freq2 = pool[Math.floor(Math.random() * pool.length)];
+                            if (freq2 !== freq1) {
+                                this.triggerSoftMusicBoxNote(freq2, this.ctx.currentTime + 0.55, 0.032, 3.0, -pan1);
+                            }
+                        }
+                    }, 2100);
+                }
+
+                playWarmPadChord(frequencies, duration) {
+                    if (!this.ctx) return;
+                    const now = this.ctx.currentTime;
+
+                    const chordFilter = this.ctx.createBiquadFilter();
+                    chordFilter.type = 'lowpass';
+                    chordFilter.frequency.setValueAtTime(420, now);
+                    chordFilter.frequency.linearRampToValueAtTime(580, now + duration * 0.45);
+                    chordFilter.frequency.linearRampToValueAtTime(360, now + duration);
+
+                    const chordGain = this.ctx.createGain();
+                    chordGain.gain.setValueAtTime(0.0001, now);
+                    chordGain.gain.linearRampToValueAtTime(0.085, now + duration * 0.38);
+                    chordGain.gain.linearRampToValueAtTime(0.065, now + duration * 0.68);
+                    chordGain.gain.exponentialRampToValueAtTime(0.0001, now + duration + 1.2);
+
+                    chordFilter.connect(chordGain);
+                    chordGain.connect(this.masterGain);
+                    chordGain.connect(this.reverbNode);
+
+                    frequencies.forEach((freq, i) => {
+                        const osc = this.ctx.createOscillator();
+                        const voiceGain = this.ctx.createGain();
+
+                        osc.type = i === 0 ? 'sine' : 'triangle';
+                        osc.frequency.setValueAtTime(freq * (1 + (i % 2 === 0 ? 0.0018 : -0.0018)), now);
+
+                        voiceGain.gain.value = i === 0 ? 0.35 : 0.22;
+
+                        osc.connect(voiceGain);
+                        voiceGain.connect(chordFilter);
+
+                        osc.start(now);
+                        osc.stop(now + duration + 1.3);
+                    });
+                }
+
+                triggerSoftMusicBoxNote(freq, startTime, peakGain, duration, panValue = 0) {
+                    if (!this.ctx) return;
+
+                    const oscFundamental = this.ctx.createOscillator();
+                    const oscWarmOvertone = this.ctx.createOscillator();
+                    const warmthFilter = this.ctx.createBiquadFilter();
+                    const noteGain = this.ctx.createGain();
+
+                    oscFundamental.type = 'sine';
+                    oscFundamental.frequency.setValueAtTime(freq, startTime);
+
+                    oscWarmOvertone.type = 'triangle';
+                    oscWarmOvertone.frequency.setValueAtTime(freq * 2, startTime);
+
+                    const overtoneGain = this.ctx.createGain();
+                    overtoneGain.gain.setValueAtTime(0.07, startTime);
+                    overtoneGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration * 0.4);
+
+                    warmthFilter.type = 'lowpass';
+                    warmthFilter.frequency.setValueAtTime(freq * 3.2, startTime);
+                    warmthFilter.frequency.exponentialRampToValueAtTime(freq * 1.1, startTime + duration * 0.75);
+
+                    noteGain.gain.setValueAtTime(0.0001, startTime);
+                    noteGain.gain.linearRampToValueAtTime(peakGain, startTime + 0.045);
+                    noteGain.gain.exponentialRampToValueAtTime(peakGain * 0.35, startTime + 0.45);
+                    noteGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+                    let outputNode = noteGain;
+                    if (this.ctx.createStereoPanner) {
+                        const panner = this.ctx.createStereoPanner();
+                        panner.pan.setValueAtTime(Math.max(-0.75, Math.min(0.75, panValue)), startTime);
+                        noteGain.connect(panner);
+                        outputNode = panner;
+                    }
+
+                    oscFundamental.connect(warmthFilter);
+                    oscWarmOvertone.connect(overtoneGain);
+                    overtoneGain.connect(warmthFilter);
+                    warmthFilter.connect(noteGain);
+
+                    outputNode.connect(this.masterGain);
+                    outputNode.connect(this.reverbNode);
+
+                    oscFundamental.start(startTime);
+                    oscWarmOvertone.start(startTime);
+                    oscFundamental.stop(startTime + duration + 0.08);
+                    oscWarmOvertone.stop(startTime + duration + 0.08);
+                }
+
+                playRoseChime(roseIndex, panX = 0) {
+                    this.init();
+                    if (!this.ctx || this.isMuted) return;
+
+                    const baseFreq = this.roseFrequencies[roseIndex] || 523.25;
+                    const now = this.ctx.currentTime;
+
+                    this.triggerSoftMusicBoxNote(baseFreq, now, 0.14, 3.2, panX);
+                    this.triggerSoftMusicBoxNote(baseFreq * 1.25, now + 0.09, 0.075, 2.9, panX * 0.6);
+                    this.triggerSoftMusicBoxNote(baseFreq * 1.498, now + 0.18, 0.065, 3.4, -panX * 0.4);
+                    this.triggerSoftMusicBoxNote(baseFreq * 2.0, now + 0.28, 0.038, 2.8, 0);
+                }
+
+                playGardenCompletionFlourish() {
+                    if (!this.ctx || this.isMuted) return;
+                    const now = this.ctx.currentTime + 0.15;
+
+                    this.roseFrequencies.forEach((freq, idx) => {
+                        const pan = ((idx / 6) * 2 - 1) * 0.55;
+                        this.triggerSoftMusicBoxNote(freq, now + idx * 0.14, 0.085, 4.0, pan);
+                    });
+                }
+
+                toggleMute() {
+                    if (!this.ctx) {
+                        this.init();
+                        return;
+                    }
+
+                    if (this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+
+                    this.isMuted = !this.isMuted;
+                    const now = this.ctx.currentTime;
+                    this.masterGain.gain.cancelScheduledValues(now);
+                    this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
+
+                    if (this.isMuted) {
+                        this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+                        this.updateUI(false);
+                    } else {
+                        this.masterGain.gain.exponentialRampToValueAtTime(0.85, now + 0.5);
+                        this.updateUI(true);
+                    }
+                }
+
+                updateUI(isPlaying) {
+                    if (isPlaying) {
+                        audioToggleBtn.classList.add('playing');
+                        audioLabelEl.textContent = 'Suono On';
+                    } else {
+                        audioToggleBtn.classList.remove('playing');
+                        audioLabelEl.textContent = 'Muto';
+                    }
+                }
+            }
+
+            const soundEngine = new SecretGardenAudio();
+
+            audioToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                soundEngine.toggleMute();
+            });
+
+            window.addEventListener('pointerdown', () => {
+                if (!soundEngine.ctx) {
+                    soundEngine.init();
+                }
+            }, { once: true });
+
+            // ============================================================================
+            // 3. INIZIALIZZAZIONE SCENA THREE.JS, CAMERA E LUCI CINEMATOGRAFICHE
             // ============================================================================
             const container = document.getElementById('webgl-container');
             const scene = new THREE.Scene();
@@ -271,11 +707,10 @@
             renderer.toneMappingExposure = 1.25;
             container.appendChild(renderer.domElement);
 
-            // Illuminazione drammatica multi-livello per esaltare il velluto dei petali
-            const ambientLight = new THREE.HemisphereLight(0xffb3c6, 0x0b020c, 1.35);
+            const ambientLight = new THREE.HemisphereLight(0xffb8cc, 0x0b020c, 1.4);
             scene.add(ambientLight);
 
-            const keyLight = new THREE.DirectionalLight(0xfff0f5, 3.8);
+            const keyLight = new THREE.DirectionalLight(0xfff2f6, 3.8);
             keyLight.position.set(6, 12, 9);
             scene.add(keyLight);
 
@@ -292,7 +727,7 @@
             scene.add(bottomGlow);
 
             // ============================================================================
-            // 3. TEXTURE PROCEDURALI MICRO-VENATURE (NESSUN ASSET ESTERNO RICHIESTO)
+            // 4. TEXTURE PROCEDURALI MICRO-VENATURE
             // ============================================================================
             function createPetalMicroTexture() {
                 const canvas = document.createElement('canvas');
@@ -303,7 +738,6 @@
                 ctx.fillStyle = '#808080';
                 ctx.fillRect(0, 0, 256, 256);
 
-                // Venature longitudinali delicate per dare realismo tattile al petalo
                 for (let i = 0; i < 160; i++) {
                     const x = Math.random() * 256;
                     ctx.beginPath();
@@ -326,9 +760,7 @@
 
             const petalBumpMap = createPetalMicroTexture();
 
-            // Palette di 4 gradazioni dal cuore luminoso ai petali esterni scuri e vellutati
             const petalMaterials = [
-                // Cuore interno (luminoso e acceso)
                 new THREE.MeshPhysicalMaterial({
                     color: 0xff1e56,
                     emissive: 0x38000e,
@@ -340,7 +772,6 @@
                     bumpScale: 0.012,
                     side: THREE.DoubleSide
                 }),
-                // Strato medio-interno (cremisi vivo)
                 new THREE.MeshPhysicalMaterial({
                     color: 0xd9043d,
                     emissive: 0x240008,
@@ -352,7 +783,6 @@
                     bumpScale: 0.015,
                     side: THREE.DoubleSide
                 }),
-                // Strato medio-esterno (rubino intenso)
                 new THREE.MeshPhysicalMaterial({
                     color: 0xa30029,
                     emissive: 0x160004,
@@ -363,7 +793,6 @@
                     bumpScale: 0.018,
                     side: THREE.DoubleSide
                 }),
-                // Petali esterni (velluto bordeaux profondo)
                 new THREE.MeshPhysicalMaterial({
                     color: 0x6e0018,
                     emissive: 0x0d0003,
@@ -395,25 +824,22 @@
             });
 
             // ============================================================================
-            // 4. GEOMETRIE PROCEDURALI: PETALI SCOLPITI, FOGLIE E BOCCIOLI
+            // 5. GEOMETRIE PROCEDURALI: PETALI SCOLPITI, FOGLIE E BOCCIOLI
             // ============================================================================
             function createSculptedPetalGeometry() {
                 const geo = new THREE.PlaneGeometry(1, 1.25, 16, 20);
                 const pos = geo.attributes.position;
 
                 for (let i = 0; i < pos.count; i++) {
-                    const u = pos.getX(i) * 2;          // da -1 a 1
-                    const v = (pos.getY(i) / 1.25) + 0.5; // da 0 (base) a 1 (apice)
+                    const u = pos.getX(i) * 2;
+                    const v = (pos.getY(i) / 1.25) + 0.5;
 
-                    // Sagoma naturale di un petalo di rosa (stretto alla base, ampio in alto)
                     const widthProfile = Math.sin(Math.pow(v, 0.68) * Math.PI * 0.94) * 0.92 + 0.14 * (1 - v);
                     const x = u * widthProfile * 0.58;
 
-                    // Doppia increspatura delicata sul bordo superiore del petalo
                     const topNotch = Math.pow(v, 3) * Math.cos(u * Math.PI * 1.5) * 0.06;
                     const y = v * 1.18 + topNotch;
 
-                    // Concavità a coppa (bowl) + bordo superiore arrotolato all'indietro (lip curl)
                     const cupDepth = (1 - u * u) * Math.sin(v * Math.PI * 0.85) * 0.28;
                     const outerLipCurl = Math.pow(Math.max(0, v - 0.58) / 0.42, 2.1) * 0.26 * (1 - 0.35 * u * u);
                     const edgeWave = Math.pow(Math.abs(u), 2.2) * Math.pow(v, 1.5) * 0.07 * Math.sin(u * 5);
@@ -432,16 +858,14 @@
                 const pos = geo.attributes.position;
 
                 for (let i = 0; i < pos.count; i++) {
-                    const u = pos.getX(i) / 0.225; // -1 a 1
-                    const v = (pos.getY(i) / 0.9) + 0.5; // 0 a 1
+                    const u = pos.getX(i) / 0.225;
+                    const v = (pos.getY(i) / 0.9) + 0.5;
 
-                    // Profilo a goccia appuntita con micro-seghettatura
                     const serration = Math.sin(v * 28) * 0.03 * Math.sin(v * Math.PI);
                     const width = (Math.sin(Math.pow(v, 0.75) * Math.PI) + serration) * 0.26;
                     const x = u * width;
                     const y = v * 0.85;
 
-                    // Piegatura lungo la nervatura centrale e incurvatura naturale verso il basso
                     const fold = Math.abs(u) * 0.06;
                     const arch = -Math.pow(v, 1.8) * 0.18;
                     const z = fold + arch;
@@ -459,7 +883,6 @@
             sharedThornGeo.translate(0, 0.075, 0);
             sharedThornGeo.rotateX(Math.PI * 0.38);
 
-            // Costruzione di una Rosa 3D completa (28 petali in fillotassi aurea + calice)
             function buildRoseHead() {
                 const headGroup = new THREE.Group();
                 const petalsData = [];
@@ -467,7 +890,7 @@
                 const goldenAngle = 137.508 * (Math.PI / 180);
 
                 for (let i = 0; i < totalPetals; i++) {
-                    const t = i / (totalPetals - 1); // 0 = centro, 1 = esterno
+                    const t = i / (totalPetals - 1);
                     const matIndex = Math.min(3, Math.floor(t * 4));
                     
                     const petalMesh = new THREE.Mesh(sharedPetalGeo, petalMaterials[matIndex]);
@@ -482,10 +905,8 @@
                         Math.sin(theta) * radius
                     );
 
-                    // Orientamento radiale verso il centro della rosa
                     pivot.rotation.y = -theta + Math.PI / 2;
 
-                    // Angoli di apertura: chiuso (bocciolo) vs sbocciato
                     const closedTilt = 0.08 + t * 0.22;
                     const openTilt = 0.16 + Math.pow(t, 1.28) * 1.12;
 
@@ -505,12 +926,10 @@
                     });
                 }
 
-                // Luce puntiforme calda nascosta nel cuore della rosa (si accende al tocco)
                 const coreLight = new THREE.PointLight(0xff2a6d, 0, 2.6);
                 coreLight.position.set(0, 0.25, 0);
                 headGroup.add(coreLight);
 
-                // Calice verde alla base della corolla + 5 sepali ricurvi
                 const receptacleGeo = new THREE.SphereGeometry(0.16, 12, 10);
                 receptacleGeo.scale(1, 1.35, 1);
                 const receptacle = new THREE.Mesh(receptacleGeo, stemMaterial);
@@ -534,23 +953,21 @@
             }
 
             // ============================================================================
-            // 5. COSTRUZIONE DEL GIARDINO DELLE 7 ROSE (POSIZIONI, STELI, FOGLIE, SPINE)
+            // 6. COSTRUZIONE DEL GIARDINO DELLE 7 ROSE (POSIZIONI, STELI, FOGLIE, SPINE)
             // ============================================================================
             const gardenGroup = new THREE.Group();
             scene.add(gardenGroup);
 
-            // Configurazione spaziale ad anfiteatro 3D: perfetta sia in verticale sia in 16:9
             const roseConfigs = [
-                { id: 0, x: -3.15, y: -0.65, z: -0.75, scale: 0.78, rotZ:  0.14, rotX: 0.22 }, // Rosa 1 (Sinistra Esterna)
-                { id: 1, x: -2.05, y:  0.35, z:  0.15, scale: 0.88, rotZ:  0.08, rotX: 0.20 }, // Rosa 2 (Sinistra Media)
-                { id: 2, x: -0.98, y:  1.25, z: -0.35, scale: 0.95, rotZ:  0.04, rotX: 0.18 }, // Rosa 3 (Centro-Sinistra Alta)
-                { id: 3, x:  0.00, y:  1.95, z:  0.45, scale: 1.12, rotZ:  0.00, rotX: 0.22 }, // Rosa 4 (Centro Reale)
-                { id: 4, x:  0.98, y:  1.18, z: -0.30, scale: 0.95, rotZ: -0.04, rotX: 0.18 }, // Rosa 5 (Centro-Destra Alta)
-                { id: 5, x:  2.05, y:  0.28, z:  0.15, scale: 0.88, rotZ: -0.08, rotX: 0.20 }, // Rosa 6 (Destra Media)
-                { id: 6, x:  3.15, y: -0.72, z: -0.75, scale: 0.78, rotZ: -0.14, rotX: 0.22 }  // Rosa 7 (Destra Esterna)
+                { id: 0, x: -3.15, y: -0.65, z: -0.75, scale: 0.78, rotZ:  0.14, rotX: 0.22 },
+                { id: 1, x: -2.05, y:  0.35, z:  0.15, scale: 0.88, rotZ:  0.08, rotX: 0.20 },
+                { id: 2, x: -0.98, y:  1.25, z: -0.35, scale: 0.95, rotZ:  0.04, rotX: 0.18 },
+                { id: 3, x:  0.00, y:  1.95, z:  0.45, scale: 1.12, rotZ:  0.00, rotX: 0.22 },
+                { id: 4, x:  0.98, y:  1.18, z: -0.30, scale: 0.95, rotZ: -0.04, rotX: 0.18 },
+                { id: 5, x:  2.05, y:  0.28, z:  0.15, scale: 0.88, rotZ: -0.08, rotX: 0.20 },
+                { id: 6, x:  3.15, y: -0.72, z: -0.75, scale: 0.78, rotZ: -0.14, rotX: 0.22 }
             ];
 
-            // Ordine di fioritura dal centro verso l'esterno: 4 -> 3,5 -> 2,6 -> 1,7
             const growthOrder = [3, 2, 4, 1, 5, 0, 6];
 
             const roses = [];
@@ -563,12 +980,10 @@
                 const roseRoot = new THREE.Group();
                 gardenGroup.add(roseRoot);
 
-                // Calcolo del turno esatto nell'onda di crescita (FIX rispetto al bug originale)
                 const waveStep = growthOrder.indexOf(index);
                 const startDelayMs = 250 + waveStep * 420;
                 const stemDurationMs = 2600;
 
-                // Creazione curva naturale 3D dello stelo dalla base fino al bocciolo
                 const p0 = new THREE.Vector3(cfg.x * 0.72, baseBottomY, cfg.z - 0.3);
                 const p1 = new THREE.Vector3(
                     cfg.x * 0.88 + (index % 2 === 0 ? -0.22 : 0.22),
@@ -584,31 +999,26 @@
 
                 const curve = new THREE.CatmullRomCurve3([p0, p1, p2, p3]);
                 const stemGeo = new THREE.TubeGeometry(curve, stemTubularSegments, 0.048 * cfg.scale, stemRadialSegments, false);
-                
-                // Inizialmente invisibile: cresce dal basso incrementando il drawRange
-                const totalIndices = stemTubularSegments * stemRadialSegments * 6;
                 stemGeo.setDrawRange(0, 0);
 
                 const stemMesh = new THREE.Mesh(stemGeo, stemMaterial);
                 roseRoot.add(stemMesh);
 
-                // Posizionamento procedurale di Foglie e Spine lungo la curva 3D
                 const attachments = [];
                 const numNodes = 7;
 
                 for (let n = 1; n <= numNodes; n++) {
-                    const tCurve = (n / (numNodes + 1.2)) * 0.88 + 0.06; // frazione altezza (0 = base, 1 = cima)
+                    const tCurve = (n / (numNodes + 1.2)) * 0.88 + 0.06;
                     const point = curve.getPointAt(tCurve);
                     const tangent = curve.getTangentAt(tCurve);
 
                     const nodeGroup = new THREE.Group();
                     nodeGroup.position.copy(point);
-                    nodeGroup.scale.setScalar(0.0001); // Nascosto finché lo stelo non raggiunge questa quota
+                    nodeGroup.scale.setScalar(0.0001);
 
                     const sideAngle = (n % 2 === 0 ? 1 : -1) * (Math.PI * 0.45) + (n * 0.7);
 
                     if (n % 3 === 0) {
-                        // Spina 3D
                         const thorn = new THREE.Mesh(sharedThornGeo, thornMaterial);
                         nodeGroup.rotation.y = sideAngle;
                         nodeGroup.rotation.z = (n % 2 === 0 ? -0.35 : 0.35);
@@ -620,7 +1030,6 @@
                             currentScale: 0.0001
                         });
                     } else {
-                        // Foglia composta (foglia principale + 2 foglioline laterali alla base)
                         const compoundLeaf = new THREE.Group();
                         
                         const mainLeaf = new THREE.Mesh(sharedLeafGeo, leafMaterial);
@@ -654,14 +1063,12 @@
                     roseRoot.add(nodeGroup);
                 }
 
-                // Costruzione del Bocciolo 3D sulla sommità dello stelo
                 const { headGroup, petalsData, coreLight } = buildRoseHead();
                 headGroup.position.copy(p3);
                 headGroup.rotation.set(cfg.rotX, (index - 3) * 0.15, cfg.rotZ);
                 headGroup.scale.setScalar(0.0001);
                 roseRoot.add(headGroup);
 
-                // Hitbox sferica invisibile maggiorata per un tocco mobile infallibile
                 const hitboxGeo = new THREE.SphereGeometry(0.68, 12, 12);
                 const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
                 const hitboxMesh = new THREE.Mesh(hitboxGeo, hitboxMat);
@@ -675,7 +1082,6 @@
                     cfg,
                     roseRoot,
                     stemGeo,
-                    totalIndices,
                     headGroup,
                     petalsData,
                     coreLight,
@@ -690,14 +1096,15 @@
                 });
             });
 
-            // Mostra il messaggio principale quando tutte le rose sono sbocciate
             setTimeout(() => {
-                mainMessage.classList.add('show');
+                if (discoveredRoses.size === 0) {
+                    mainMessage.classList.add('show');
+                }
                 hudTop.classList.add('visible');
             }, 5200);
 
             // ============================================================================
-            // 6. SISTEMA DI LUCCIOLE E BOKEH 3D SOSPESI NELLO SPAZIO
+            // 7. SISTEMA DI LUCCIOLE E BOKEH 3D SOSPESI NELLO SPAZIO
             // ============================================================================
             function createGlowParticleTexture() {
                 const canvas = document.createElement('canvas');
@@ -706,8 +1113,8 @@
                 const ctx = canvas.getContext('2d');
                 const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
                 grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-                grad.addColorStop(0.25, 'rgba(255, 120, 165, 0.85)');
-                grad.addColorStop(0.6, 'rgba(255, 30, 90, 0.25)');
+                grad.addColorStop(0.25, 'rgba(255, 135, 175, 0.85)');
+                grad.addColorStop(0.6, 'rgba(255, 40, 100, 0.25)');
                 grad.addColorStop(1, 'rgba(255, 0, 60, 0)');
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 64, 64);
@@ -724,8 +1131,8 @@
                 particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 12;
                 particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 6 - 1;
                 particleSpeeds.push({
-                    vy: 0.25 + Math.random() * 0.45,
-                    vx: (Math.random() - 0.5) * 0.2,
+                    vy: 0.22 + Math.random() * 0.4,
+                    vx: (Math.random() - 0.5) * 0.18,
                     phase: Math.random() * Math.PI * 2
                 });
             }
@@ -744,13 +1151,14 @@
             scene.add(firefliesPoints);
 
             // ============================================================================
-            // 7. SISTEMA DI PETALI 3D CHE CADONO DOLCEMENTE AL TOCCO
+            // 8. SISTEMA DI PETALI 3D CHE CADONO (AL TOCCO + PIOGGIA FINALE ROMANTICA)
             // ============================================================================
             const fallingPetals = [];
 
-            function spawnFallingPetals3D(originWorldPos) {
-                for (let i = 0; i < 5; i++) {
-                    const pMesh = new THREE.Mesh(sharedPetalGeo, petalMaterials[1]);
+            function spawnFallingPetals3D(originWorldPos, count = 5) {
+                for (let i = 0; i < count; i++) {
+                    const matChoice = petalMaterials[Math.floor(Math.random() * 2)];
+                    const pMesh = new THREE.Mesh(sharedPetalGeo, matChoice);
                     const scale = 0.16 + Math.random() * 0.12;
                     pMesh.scale.setScalar(scale);
                     pMesh.position.copy(originWorldPos);
@@ -767,20 +1175,46 @@
                     scene.add(pMesh);
                     fallingPetals.push({
                         mesh: pMesh,
-                        vy: -(0.55 + Math.random() * 0.45),
-                        vx: (Math.random() - 0.5) * 0.6,
-                        vz: (Math.random() - 0.5) * 0.4,
-                        rx: (Math.random() - 0.5) * 2.5,
-                        ry: (Math.random() - 0.5) * 2.5,
+                        vy: -(0.52 + Math.random() * 0.42),
+                        vx: (Math.random() - 0.5) * 0.55,
+                        vz: (Math.random() - 0.5) * 0.38,
+                        rx: (Math.random() - 0.5) * 2.2,
+                        ry: (Math.random() - 0.5) * 2.2,
                         swayOffset: Math.random() * 10,
                         age: 0,
-                        maxAge: 4.5
+                        maxAge: 5.5
                     });
                 }
             }
 
-            // Scintille luminose 2D ancorate alla proiezione schermo esatta della rosa
-            const sparkleColors = ['#ff4d79', '#ff1a53', '#ffebf0', '#ffccd8', '#ff99b8'];
+            // Pioggia continua di petali dall'alto quando appare "Ti amo vita mij 🤍🫍"
+            function startRomanticPetalShower() {
+                if (finalRainActive) return;
+                finalRainActive = true;
+
+                // Primo soffio di petali dall'alto
+                for (let i = 0; i < 14; i++) {
+                    const pos = new THREE.Vector3(
+                        (Math.random() - 0.5) * 8,
+                        4.8 + Math.random() * 2.5,
+                        (Math.random() - 0.5) * 2.5
+                    );
+                    spawnFallingPetals3D(pos, 1);
+                }
+
+                // Pioggia dolce e costante in background
+                setInterval(() => {
+                    if (document.hidden || fallingPetals.length > 35) return;
+                    const pos = new THREE.Vector3(
+                        (Math.random() - 0.5) * 8.5,
+                        5.2,
+                        (Math.random() - 0.5) * 2.5
+                    );
+                    spawnFallingPetals3D(pos, 1);
+                }, 480);
+            }
+
+            const sparkleColors = ['#ff5c8a', '#ff1a53', '#ffebf0', '#ffd1dc', '#ff99b8'];
             function createCinematicSparkles(screenX, screenY) {
                 for (let i = 0; i < 22; i++) {
                     const spark = document.createElement('div');
@@ -807,7 +1241,7 @@
             }
 
             // ============================================================================
-            // 8. INTERAZIONE (RAYCASTER 3D, TOUCH & MOUSE, RESPONSIVE CAMERA)
+            // 9. INTERAZIONE (RAYCASTER 3D, AUDIO SPAZIALE, RESPONSIVE CAMERA)
             // ============================================================================
             const raycaster = new THREE.Raycaster();
             const pointer = new THREE.Vector2();
@@ -821,17 +1255,13 @@
 
                 camera.aspect = aspect;
 
-                // Adatta distanza e FOV affinché tutte e 7 le rose entrino sempre nello schermo
                 if (aspect < 0.65) {
-                    // Smartphone verticale stretto
                     camera.fov = 56;
                     camera.position.set(0, 0.35, 11.4);
                 } else if (aspect < 1.0) {
-                    // Smartphone grande / Tablet verticale
                     camera.fov = 50;
                     camera.position.set(0, 0.4, 9.8);
                 } else {
-                    // Desktop / Orizzontale
                     camera.fov = 42;
                     camera.position.set(0, 0.45, 8.2);
                 }
@@ -843,7 +1273,6 @@
             window.addEventListener('resize', updateCameraResponsiveness);
             updateCameraResponsiveness();
 
-            // Converte coordinate 3D del cuore della rosa in coordinate pixel dello schermo (FIX coordinate mobile)
             function getRoseScreenPosition(rose) {
                 const worldPos = new THREE.Vector3();
                 rose.headGroup.getWorldPosition(worldPos);
@@ -853,27 +1282,27 @@
                 return {
                     x: (worldPos.x * 0.5 + 0.5) * window.innerWidth,
                     y: (-(worldPos.y * 0.5) + 0.5) * window.innerHeight,
+                    pan: worldPos.x,
                     worldPos: rose.headGroup.getWorldPosition(new THREE.Vector3())
                 };
             }
 
             function triggerRoseInteraction(roseIndex) {
                 const rose = roses[roseIndex];
-                if (!rose || rose.bloomProgress < 0.35) return; // Attende che il bocciolo sia visibile
+                if (!rose || rose.bloomProgress < 0.35) return;
 
-                // Impulso elastico sul bocciolo
                 rose.clickPulse = 1.0;
 
-                // Accende il bagliore magico interno della rosa raccolta
+                const posInfo = getRoseScreenPosition(rose);
+
+                soundEngine.playRoseChime(roseIndex, posInfo.pan);
+
                 discoveredRoses.add(roseIndex);
                 discoveredCountEl.textContent = discoveredRoses.size;
 
-                // Calcola il centro esatto sullo schermo della rosa toccata
-                const posInfo = getRoseScreenPosition(rose);
                 createCinematicSparkles(posInfo.x, posInfo.y);
-                spawnFallingPetals3D(posInfo.worldPos);
+                spawnFallingPetals3D(posInfo.worldPos, 5);
 
-                // Frase biunivoca associata a questa specifica rosa
                 const secretPhrase = phrases[roseIndex];
                 const allCollectedNote = discoveredRoses.size === 7
                     ? `Rosa ${roseIndex + 1} di 7 • Hai svelato l'intero giardino`
@@ -886,13 +1315,25 @@
                 popupMessage.classList.add('show');
                 mainMessage.classList.add('fade-away');
 
+                const readingTimeMs = secretPhrase.length > 45 ? 6500 : 5000;
+
+                // Se è stata appena raccolta la 7ª rosa, mostra il gran finale romantico
+                if (discoveredRoses.size === 7 && !celebrationPlayed) {
+                    celebrationPlayed = true;
+                    setTimeout(() => {
+                        finalMessage.classList.add('show');
+                        soundEngine.playGardenCompletionFlourish();
+                        startRomanticPetalShower();
+                        createCinematicSparkles(window.innerWidth * 0.5, window.innerHeight * 0.22);
+                    }, 1800);
+                }
+
                 clearTimeout(popupTimeout);
                 popupTimeout = setTimeout(() => {
                     popupMessage.classList.remove('show');
-                }, 4800);
+                }, readingTimeMs);
             }
 
-            // Gestione unificata Pointer (Mouse + Touch Mobile)
             window.addEventListener('pointermove', (e) => {
                 const nx = (e.clientX / window.innerWidth) * 2 - 1;
                 const ny = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -917,6 +1358,8 @@
             }, { passive: true });
 
             window.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('#audio-toggle')) return;
+
                 const nx = (e.clientX / window.innerWidth) * 2 - 1;
                 const ny = -(e.clientY / window.innerHeight) * 2 + 1;
 
@@ -934,7 +1377,7 @@
             });
 
             // ============================================================================
-            // 9. LOOP DI ANIMAZIONE CINEMATOGRAFICA A 60FPS
+            // 10. LOOP DI ANIMAZIONE CINEMATOGRAFICA A 60FPS
             // ============================================================================
             function easeOutCubic(x) {
                 return 1 - Math.pow(1 - x, 3);
@@ -956,23 +1399,19 @@
                 const elapsedSec = clock.getElapsedTime();
                 const nowMs = performance.now() - startTime;
 
-                // 1. Parallasse morbida della camera
                 gardenGroup.rotation.y += (targetCameraParallax.x * 0.18 - gardenGroup.rotation.y) * 0.05;
                 gardenGroup.rotation.x += (-targetCameraParallax.y * 0.1 - gardenGroup.rotation.x) * 0.05;
 
-                // 2. Aggiornamento crescita steli, foglie, boccioli e respiro organico
                 roses.forEach((rose) => {
                     const localTime = nowMs - rose.startDelayMs;
 
                     if (localTime > 0) {
-                        // A) Progresso crescita stelo dal basso verso l'alto
                         const rawStemProg = Math.min(1, localTime / rose.stemDurationMs);
                         const stemProg = easeOutCubic(rawStemProg);
 
                         const activeRings = Math.floor(stemProg * stemTubularSegments);
                         rose.stemGeo.setDrawRange(0, activeRings * stemRadialSegments * 6);
 
-                        // B) Spuntare sincronizzato di foglie e spine non appena lo stelo le raggiunge
                         rose.attachments.forEach((att) => {
                             if (stemProg >= att.threshold) {
                                 att.currentScale += (att.targetScale - att.currentScale) * 0.12;
@@ -980,12 +1419,10 @@
                             }
                         });
 
-                        // C) Schiusura progressiva dei 28 petali all'arrivo dello stelo in cima
                         if (rawStemProg > 0.72) {
                             const bloomRaw = Math.min(1, (localTime - rose.stemDurationMs * 0.72) / 2400);
                             rose.bloomProgress = easeOutBack(bloomRaw);
 
-                            // Hover & Click pulse
                             const isHovered = hoveredRoseIndex === rose.index ? 1 : 0;
                             rose.hoverFactor += (isHovered - rose.hoverFactor) * 0.12;
 
@@ -995,14 +1432,12 @@
                                 rose.clickPulse = 0;
                             }
 
-                            // Respiro asincrono continuo (senza alcuno scatto di rotazione)
                             const breatheScale = 1 + Math.sin(elapsedSec * rose.swaySpeed + rose.swayPhase) * 0.028;
                             const interactionScale = 1 + rose.hoverFactor * 0.08 + Math.sin(rose.clickPulse * Math.PI) * 0.16;
                             const finalScale = rose.cfg.scale * Math.max(0.001, rose.bloomProgress) * breatheScale * interactionScale;
 
                             rose.headGroup.scale.setScalar(finalScale);
 
-                            // Apertura petalo per petalo (gli esterni si aprono con più ampiezza degli interni)
                             const openFactor = Math.min(1, bloomRaw * 1.15);
                             const breathePetal = Math.sin(elapsedSec * rose.swaySpeed + rose.swayPhase) * 0.035;
                             const pulsePetal = Math.sin(rose.clickPulse * Math.PI) * 0.14;
@@ -1013,21 +1448,18 @@
                                 p.pivot.rotation.x = -targetTilt;
                             });
 
-                            // Illuminazione del cuore della rosa (più intensa se già scoperta o in hover)
                             const isDiscovered = discoveredRoses.has(rose.index);
                             const targetLightIntensity = (isDiscovered ? 2.2 : 0.4) + rose.hoverFactor * 1.8 + rose.clickPulse * 4.5;
                             rose.coreLight.intensity += (targetLightIntensity - rose.coreLight.intensity) * 0.1;
                         }
                     }
 
-                    // D) Ondeggiamento naturale al vento dell'intera rosa
                     const windSwayZ = Math.sin(elapsedSec * rose.swaySpeed + rose.swayPhase) * 0.018;
                     const windSwayX = Math.cos(elapsedSec * (rose.swaySpeed * 0.8) + rose.swayPhase) * 0.012;
                     rose.roseRoot.rotation.z = windSwayZ;
                     rose.roseRoot.rotation.x = windSwayX;
                 });
 
-                // 3. Animazione Lucciole fluttuanti
                 const posArr = particleGeo.attributes.position.array;
                 for (let i = 0; i < particleCount; i++) {
                     const sp = particleSpeeds[i];
@@ -1041,7 +1473,6 @@
                 }
                 particleGeo.attributes.position.needsUpdate = true;
 
-                // 4. Fisica leggera dei petali 3D che cadono al tocco
                 for (let i = fallingPetals.length - 1; i >= 0; i--) {
                     const fp = fallingPetals[i];
                     fp.age += dt;
