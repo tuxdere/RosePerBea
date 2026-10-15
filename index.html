@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Il Giardino delle Rose Segrete</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* === RESET & CINEMATIC BASE === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #030005;
+            font-family: 'Playfair Display', serif;
+            color: #fff5f7;
+            touch-action: none;
+            position: fixed;
+        }
+
+        /* Sfondo profondo stratificato sotto il canvas 3D */
+        .cinematic-bg {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 50% 75%, rgba(85, 0, 28, 0.55) 0%, rgba(22, 0, 10, 0.85) 45%, #030006 90%),
+                radial-gradient(circle at 50% 20%, rgba(45, 5, 35, 0.35) 0%, transparent 65%);
+            z-index: 0;
+        }
+
+        #webgl-container {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            cursor: default;
+        }
+
+        /* Vignettatura cinematografica morbida */
+        .vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.85) 100%);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* === UI & TYPOGRAPHY === */
+        #hud-top {
+            position: absolute;
+            top: max(22px, env(safe-area-inset-top, 22px));
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.8s ease;
+        }
+
+        #hud-top.visible {
+            opacity: 1;
+        }
+
+        .counter-pill {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(255, 190, 208, 0.85);
+            background: rgba(20, 2, 10, 0.65);
+            border: 1px solid rgba(255, 77, 121, 0.25);
+            padding: 7px 18px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #main-message {
+            position: absolute;
+            top: 15%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(1.45rem, 4.5vw, 2.5rem);
+            font-weight: 400;
+            letter-spacing: 3.5px;
+            text-shadow: 0 0 25px rgba(255, 60, 110, 0.75), 0 4px 15px rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 2s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 4;
+            pointer-events: none;
+            padding: 0 24px;
+            color: #fff0f4;
+        }
+
+        #main-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #main-message.fade-away {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.9s ease, transform 0.9s ease;
+        }
+
+        .sub-hint {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(0.68rem, 2.2vw, 0.8rem);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: rgba(255, 150, 180, 0.7);
+            margin-top: 10px;
+        }
+
+        /* Card del messaggio segreto */
+        #popup-message {
+            position: fixed;
+            bottom: max(6%, env(safe-area-inset-bottom, 24px));
+            left: 50%;
+            transform: translateX(-50%) translateY(35px) scale(0.94);
+            background: linear-gradient(145deg, rgba(28, 3, 12, 0.88) 0%, rgba(10, 1, 5, 0.95) 100%);
+            border: 1px solid rgba(255, 90, 135, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 22px 32px;
+            border-radius: 36px;
+            font-size: clamp(1.15rem, 4vw, 1.5rem);
+            font-style: italic;
+            color: #fff2f6;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.85), 
+                0 0 35px rgba(255, 35, 95, 0.22),
+                inset 0 1px 1px rgba(255, 255, 255, 0.12);
+            opacity: 0;
+            pointer-events: none;
+            transition: 
+                opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), 
+                transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 6;
+            text-align: center;
+            width: min(90vw, 480px);
+            line-height: 1.45;
+        }
+
+        #popup-message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .popup-quote {
+            display: block;
+            text-shadow: 0 2px 12px rgba(255, 50, 100, 0.35);
+        }
+
+        .popup-sub {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #ff5c8a;
+            margin-top: 10px;
+            font-style: normal;
+            font-weight: 400;
+        }
+
+        /* === PARTICELLE DOM AL TOCCO === */
+        .sparkle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+            mix-blend-mode: screen;
+            animation: cinematicSparkle 1.15s cubic-bezier(0.12, 0.8, 0.28, 1) forwards;
+        }
+
+        @keyframes cinematicSparkle {
+            0% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+                background: #ffffff;
+                box-shadow: 0 0 12px 3px #fff, 0 0 22px 5px var(--c);
+            }
+            45% { opacity: 0.9; }
+            100% {
+                transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+                opacity: 0;
+                background: var(--c);
+                box-shadow: 0 0 15px 1px var(--c);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cinematic-bg"></div>
+    <div id="webgl-container"></div>
+    <div class="vignette"></div>
+
+    <div id="hud-top">
+        <div class="counter-pill">Rose svelate: <span id="discovered-count">0</span> / 7</div>
+    </div>
+
+    <div id="main-message">
+        raccogli la rosa che vuoi
+        <span class="sub-hint">Tocca un bocciolo per svelarne il segreto</span>
+    </div>
+
+    <div id="popup-message"></div>
+
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        (() => {
+            // ============================================================================
+            // 1. FRASI SEGRETE (CORRISPONDENZA BIUNIVOCA 1:1 CON LE 7 ROSE)
+            // ============================================================================
+            const phrases = [
+                "hai la pelle liscia, fatti scivolare via le cose brutte",
+                "vedi? anche questa è fatta",
+                "sei un alpaca che spacca",
+                "brick by brick",
+                "non c'è due senza té",
+                "se hai bisogno di me ci sono",
+                "sei forte e lo sai, quello che ancora non sai è che lo sei più di quanto tu creda"
+            ];
+
+            const discoveredRoses = new Set();
+            const mainMessage = document.getElementById('main-message');
+            const popupMessage = document.getElementById('popup-message');
+            const hudTop = document.getElementById('hud-top');
+            const discoveredCountEl = document.getElementById('discovered-count');
+            let popupTimeout = null;
+
+            // ============================================================================
+            // 2. INIZIALIZZAZIONE SCENA THREE.JS, CAMERA E LUCI CINEMATOGRAFICHE
+            // ============================================================================
+            const container = document.getElementById('webgl-container');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x060008, 0.038);
+
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            
+            const renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.physicallyCorrectLights = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.25;
+            container.appendChild(renderer.domElement);
+
+            // Illuminazione drammatica multi-livello per esaltare il velluto dei petali
+            const ambientLight = new THREE.HemisphereLight(0xffb3c6, 0x0b020c, 1.35);
+            scene.add(ambientLight);
+
+            const keyLight = new THREE.DirectionalLight(0xfff0f5, 3.8);
+            keyLight.position.set(6, 12, 9);
+            scene.add(keyLight);
+
+            const rimLightLeft = new THREE.PointLight(0xff1a53, 14, 24);
+            rimLightLeft.position.set(-7, 5, -3);
+            scene.add(rimLightLeft);
+
+            const rimLightRight = new THREE.PointLight(0xff4d79, 12, 24);
+            rimLightRight.position.set(7, 4, -2);
+            scene.add(rimLightRight);
+
+            const bottomGlow = new THREE.PointLight(0x990033, 8, 18);
+            bottomGlow.position.set(0, -4, 3);
+            scene.add(bottomGlow);
+
+            // ============================================================================
+            // 3. TEXTURE PROCEDURALI MICRO-VENATURE (NESSUN ASSET ESTERNO RICHIESTO)
+            // ============================================================================
+            function createPetalMicroTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#808080';
+                ctx.fillRect(0, 0, 256, 256);
+
+                // Venature longitudinali delicate per dare realismo tattile al petalo
+                for (let i = 0; i < 160; i++) {
+                    const x = Math.random() * 256;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 256);
+                    ctx.bezierCurveTo(
+                        x + (Math.random() - 0.5) * 35, 170,
+                        x + (Math.random() - 0.5) * 45, 85,
+                        x + (Math.random() - 0.5) * 55, 0
+                    );
+                    ctx.strokeStyle = i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+                    ctx.lineWidth = Math.random() * 1.8 + 0.5;
+                    ctx.stroke();
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                return texture;
+            }
+
+            const petalBumpMap = createPetalMicroTexture();
+
+            // Palette di 4 gradazioni dal cuore luminoso ai petali esterni scuri e vellutati
+            const petalMaterials = [
+                // Cuore interno (luminoso e acceso)
+                new THREE.MeshPhysicalMaterial({
+                    color: 0xff1e56,
+                    emissive: 0x38000e,
+                    roughness: 0.42,
+                    metalness: 0.02,
+                    clearcoat: 0.18,
+                    clearcoatRoughness: 0.65,
+                    bumpMap: petalBumpMap,
+                    bumpScale: 0.012,
+                    side: THREE.DoubleSide
+                }),
+                // Strato medio-interno (cremisi vivo)
+                new THREE.MeshPhysicalMaterial({
+                    color: 0xd9043d,
+                    emissive: 0x240008,
+                    roughness: 0.48,
+                    metalness: 0.02,
+                    clearcoat: 0.12,
+                    clearcoatRoughness: 0.7,
+                    bumpMap: petalBumpMap,
+                    bumpScale: 0.015,
+                    side: THREE.DoubleSide
+                }),
+                // Strato medio-esterno (rubino intenso)
+                new THREE.MeshPhysicalMaterial({
+                    color: 0xa30029,
+                    emissive: 0x160004,
+                    roughness: 0.55,
+                    metalness: 0.03,
+                    clearcoat: 0.08,
+                    bumpMap: petalBumpMap,
+                    bumpScale: 0.018,
+                    side: THREE.DoubleSide
+                }),
+                // Petali esterni (velluto bordeaux profondo)
+                new THREE.MeshPhysicalMaterial({
+                    color: 0x6e0018,
+                    emissive: 0x0d0003,
+                    roughness: 0.62,
+                    metalness: 0.04,
+                    clearcoat: 0.05,
+                    bumpMap: petalBumpMap,
+                    bumpScale: 0.02,
+                    side: THREE.DoubleSide
+                })
+            ];
+
+            const stemMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1d3b22,
+                roughness: 0.65,
+                metalness: 0.05
+            });
+
+            const leafMaterial = new THREE.MeshStandardMaterial({
+                color: 0x244729,
+                roughness: 0.52,
+                metalness: 0.08,
+                side: THREE.DoubleSide
+            });
+
+            const thornMaterial = new THREE.MeshStandardMaterial({
+                color: 0x3b1c22,
+                roughness: 0.5
+            });
+
+            // ============================================================================
+            // 4. GEOMETRIE PROCEDURALI: PETALI SCOLPITI, FOGLIE E BOCCIOLI
+            // ============================================================================
+            function createSculptedPetalGeometry() {
+                const geo = new THREE.PlaneGeometry(1, 1.25, 16, 20);
+                const pos = geo.attributes.position;
+
+                for (let i = 0; i < pos.count; i++) {
+                    const u = pos.getX(i) * 2;          // da -1 a 1
+                    const v = (pos.getY(i) / 1.25) + 0.5; // da 0 (base) a 1 (apice)
+
+                    // Sagoma naturale di un petalo di rosa (stretto alla base, ampio in alto)
+                    const widthProfile = Math.sin(Math.pow(v, 0.68) * Math.PI * 0.94) * 0.92 + 0.14 * (1 - v);
+                    const x = u * widthProfile * 0.58;
+
+                    // Doppia increspatura delicata sul bordo superiore del petalo
+                    const topNotch = Math.pow(v, 3) * Math.cos(u * Math.PI * 1.5) * 0.06;
+                    const y = v * 1.18 + topNotch;
+
+                    // Concavità a coppa (bowl) + bordo superiore arrotolato all'indietro (lip curl)
+                    const cupDepth = (1 - u * u) * Math.sin(v * Math.PI * 0.85) * 0.28;
+                    const outerLipCurl = Math.pow(Math.max(0, v - 0.58) / 0.42, 2.1) * 0.26 * (1 - 0.35 * u * u);
+                    const edgeWave = Math.pow(Math.abs(u), 2.2) * Math.pow(v, 1.5) * 0.07 * Math.sin(u * 5);
+
+                    const z = cupDepth - outerLipCurl + edgeWave;
+
+                    pos.setXYZ(i, x, y, z);
+                }
+
+                geo.computeVertexNormals();
+                return geo;
+            }
+
+            function createSculptedLeafGeometry() {
+                const geo = new THREE.PlaneGeometry(0.45, 0.9, 10, 14);
+                const pos = geo.attributes.position;
+
+                for (let i = 0; i < pos.count; i++) {
+                    const u = pos.getX(i) / 0.225; // -1 a 1
+                    const v = (pos.getY(i) / 0.9) + 0.5; // 0 a 1
+
+                    // Profilo a goccia appuntita con micro-seghettatura
+                    const serration = Math.sin(v * 28) * 0.03 * Math.sin(v * Math.PI);
+                    const width = (Math.sin(Math.pow(v, 0.75) * Math.PI) + serration) * 0.26;
+                    const x = u * width;
+                    const y = v * 0.85;
+
+                    // Piegatura lungo la nervatura centrale e incurvatura naturale verso il basso
+                    const fold = Math.abs(u) * 0.06;
+                    const arch = -Math.pow(v, 1.8) * 0.18;
+                    const z = fold + arch;
+
+                    pos.setXYZ(i, x, y, z);
+                }
+
+                geo.computeVertexNormals();
+                return geo;
+            }
+
+            const sharedPetalGeo = createSculptedPetalGeometry();
+            const sharedLeafGeo = createSculptedLeafGeometry();
+            const sharedThornGeo = new THREE.ConeGeometry(0.032, 0.15, 6);
+            sharedThornGeo.translate(0, 0.075, 0);
+            sharedThornGeo.rotateX(Math.PI * 0.38);
+
+            // Costruzione di una Rosa 3D completa (28 petali in fillotassi aurea + calice)
+            function buildRoseHead() {
+                const headGroup = new THREE.Group();
+                const petalsData = [];
+                const totalPetals = 28;
+                const goldenAngle = 137.508 * (Math.PI / 180);
+
+                for (let i = 0; i < totalPetals; i++) {
+                    const t = i / (totalPetals - 1); // 0 = centro, 1 = esterno
+                    const matIndex = Math.min(3, Math.floor(t * 4));
+                    
+                    const petalMesh = new THREE.Mesh(sharedPetalGeo, petalMaterials[matIndex]);
+                    const pivot = new THREE.Group();
+
+                    const theta = i * goldenAngle;
+                    const radius = 0.025 + Math.pow(t, 1.35) * 0.22;
+
+                    pivot.position.set(
+                        Math.cos(theta) * radius,
+                        -Math.pow(t, 1.6) * 0.11,
+                        Math.sin(theta) * radius
+                    );
+
+                    // Orientamento radiale verso il centro della rosa
+                    pivot.rotation.y = -theta + Math.PI / 2;
+
+                    // Angoli di apertura: chiuso (bocciolo) vs sbocciato
+                    const closedTilt = 0.08 + t * 0.22;
+                    const openTilt = 0.16 + Math.pow(t, 1.28) * 1.12;
+
+                    const pScale = 0.28 + Math.pow(t, 0.88) * 0.68;
+                    petalMesh.scale.set(pScale * (0.92 + Math.random() * 0.14), pScale, pScale);
+                    petalMesh.rotation.z = (Math.random() - 0.5) * 0.12;
+
+                    pivot.rotation.x = -closedTilt;
+                    pivot.add(petalMesh);
+                    headGroup.add(pivot);
+
+                    petalsData.push({
+                        pivot,
+                        closedTilt,
+                        openTilt,
+                        layerRatio: t
+                    });
+                }
+
+                // Luce puntiforme calda nascosta nel cuore della rosa (si accende al tocco)
+                const coreLight = new THREE.PointLight(0xff2a6d, 0, 2.6);
+                coreLight.position.set(0, 0.25, 0);
+                headGroup.add(coreLight);
+
+                // Calice verde alla base della corolla + 5 sepali ricurvi
+                const receptacleGeo = new THREE.SphereGeometry(0.16, 12, 10);
+                receptacleGeo.scale(1, 1.35, 1);
+                const receptacle = new THREE.Mesh(receptacleGeo, stemMaterial);
+                receptacle.position.y = -0.14;
+                headGroup.add(receptacle);
+
+                for (let s = 0; s < 5; s++) {
+                    const sepalPivot = new THREE.Group();
+                    const sAngle = (s / 5) * Math.PI * 2;
+                    sepalPivot.rotation.y = sAngle;
+                    sepalPivot.position.y = -0.12;
+
+                    const sepal = new THREE.Mesh(sharedLeafGeo, leafMaterial);
+                    sepal.scale.set(0.42, 0.55, 0.42);
+                    sepal.rotation.x = Math.PI * 0.62;
+                    sepalPivot.add(sepal);
+                    headGroup.add(sepalPivot);
+                }
+
+                return { headGroup, petalsData, coreLight };
+            }
+
+            // ============================================================================
+            // 5. COSTRUZIONE DEL GIARDINO DELLE 7 ROSE (POSIZIONI, STELI, FOGLIE, SPINE)
+            // ============================================================================
+            const gardenGroup = new THREE.Group();
+            scene.add(gardenGroup);
+
+            // Configurazione spaziale ad anfiteatro 3D: perfetta sia in verticale sia in 16:9
+            const roseConfigs = [
+                { id: 0, x: -3.15, y: -0.65, z: -0.75, scale: 0.78, rotZ:  0.14, rotX: 0.22 }, // Rosa 1 (Sinistra Esterna)
+                { id: 1, x: -2.05, y:  0.35, z:  0.15, scale: 0.88, rotZ:  0.08, rotX: 0.20 }, // Rosa 2 (Sinistra Media)
+                { id: 2, x: -0.98, y:  1.25, z: -0.35, scale: 0.95, rotZ:  0.04, rotX: 0.18 }, // Rosa 3 (Centro-Sinistra Alta)
+                { id: 3, x:  0.00, y:  1.95, z:  0.45, scale: 1.12, rotZ:  0.00, rotX: 0.22 }, // Rosa 4 (Centro Reale)
+                { id: 4, x:  0.98, y:  1.18, z: -0.30, scale: 0.95, rotZ: -0.04, rotX: 0.18 }, // Rosa 5 (Centro-Destra Alta)
+                { id: 5, x:  2.05, y:  0.28, z:  0.15, scale: 0.88, rotZ: -0.08, rotX: 0.20 }, // Rosa 6 (Destra Media)
+                { id: 6, x:  3.15, y: -0.72, z: -0.75, scale: 0.78, rotZ: -0.14, rotX: 0.22 }  // Rosa 7 (Destra Esterna)
+            ];
+
+            // Ordine di fioritura dal centro verso l'esterno: 4 -> 3,5 -> 2,6 -> 1,7
+            const growthOrder = [3, 2, 4, 1, 5, 0, 6];
+
+            const roses = [];
+            const hitTargets = [];
+            const baseBottomY = -5.6;
+            const stemRadialSegments = 10;
+            const stemTubularSegments = 64;
+
+            roseConfigs.forEach((cfg, index) => {
+                const roseRoot = new THREE.Group();
+                gardenGroup.add(roseRoot);
+
+                // Calcolo del turno esatto nell'onda di crescita (FIX rispetto al bug originale)
+                const waveStep = growthOrder.indexOf(index);
+                const startDelayMs = 250 + waveStep * 420;
+                const stemDurationMs = 2600;
+
+                // Creazione curva naturale 3D dello stelo dalla base fino al bocciolo
+                const p0 = new THREE.Vector3(cfg.x * 0.72, baseBottomY, cfg.z - 0.3);
+                const p1 = new THREE.Vector3(
+                    cfg.x * 0.88 + (index % 2 === 0 ? -0.22 : 0.22),
+                    baseBottomY + (cfg.y - baseBottomY) * 0.36,
+                    cfg.z + 0.15
+                );
+                const p2 = new THREE.Vector3(
+                    cfg.x * 1.04 + (index % 2 === 0 ? 0.16 : -0.16),
+                    baseBottomY + (cfg.y - baseBottomY) * 0.72,
+                    cfg.z - 0.1
+                );
+                const p3 = new THREE.Vector3(cfg.x, cfg.y, cfg.z);
+
+                const curve = new THREE.CatmullRomCurve3([p0, p1, p2, p3]);
+                const stemGeo = new THREE.TubeGeometry(curve, stemTubularSegments, 0.048 * cfg.scale, stemRadialSegments, false);
+                
+                // Inizialmente invisibile: cresce dal basso incrementando il drawRange
+                const totalIndices = stemTubularSegments * stemRadialSegments * 6;
+                stemGeo.setDrawRange(0, 0);
+
+                const stemMesh = new THREE.Mesh(stemGeo, stemMaterial);
+                roseRoot.add(stemMesh);
+
+                // Posizionamento procedurale di Foglie e Spine lungo la curva 3D
+                const attachments = [];
+                const numNodes = 7;
+
+                for (let n = 1; n <= numNodes; n++) {
+                    const tCurve = (n / (numNodes + 1.2)) * 0.88 + 0.06; // frazione altezza (0 = base, 1 = cima)
+                    const point = curve.getPointAt(tCurve);
+                    const tangent = curve.getTangentAt(tCurve);
+
+                    const nodeGroup = new THREE.Group();
+                    nodeGroup.position.copy(point);
+                    nodeGroup.scale.setScalar(0.0001); // Nascosto finché lo stelo non raggiunge questa quota
+
+                    const sideAngle = (n % 2 === 0 ? 1 : -1) * (Math.PI * 0.45) + (n * 0.7);
+
+                    if (n % 3 === 0) {
+                        // Spina 3D
+                        const thorn = new THREE.Mesh(sharedThornGeo, thornMaterial);
+                        nodeGroup.rotation.y = sideAngle;
+                        nodeGroup.rotation.z = (n % 2 === 0 ? -0.35 : 0.35);
+                        nodeGroup.add(thorn);
+                        attachments.push({
+                            group: nodeGroup,
+                            threshold: tCurve,
+                            targetScale: 0.85 * cfg.scale,
+                            currentScale: 0.0001
+                        });
+                    } else {
+                        // Foglia composta (foglia principale + 2 foglioline laterali alla base)
+                        const compoundLeaf = new THREE.Group();
+                        
+                        const mainLeaf = new THREE.Mesh(sharedLeafGeo, leafMaterial);
+                        compoundLeaf.add(mainLeaf);
+
+                        const sideLeafL = new THREE.Mesh(sharedLeafGeo, leafMaterial);
+                        sideLeafL.scale.setScalar(0.58);
+                        sideLeafL.position.set(-0.06, 0.14, 0);
+                        sideLeafL.rotation.z = 0.65;
+                        compoundLeaf.add(sideLeafL);
+
+                        const sideLeafR = new THREE.Mesh(sharedLeafGeo, leafMaterial);
+                        sideLeafR.scale.setScalar(0.58);
+                        sideLeafR.position.set(0.06, 0.14, 0);
+                        sideLeafR.rotation.z = -0.65;
+                        compoundLeaf.add(sideLeafR);
+
+                        compoundLeaf.rotation.x = Math.PI * 0.32;
+                        nodeGroup.rotation.y = sideAngle;
+                        nodeGroup.rotation.z = (n % 2 === 0 ? -0.4 : 0.4) + tangent.x * 0.3;
+                        nodeGroup.add(compoundLeaf);
+
+                        attachments.push({
+                            group: nodeGroup,
+                            threshold: tCurve,
+                            targetScale: (0.72 + (1 - tCurve) * 0.35) * cfg.scale,
+                            currentScale: 0.0001
+                        });
+                    }
+
+                    roseRoot.add(nodeGroup);
+                }
+
+                // Costruzione del Bocciolo 3D sulla sommità dello stelo
+                const { headGroup, petalsData, coreLight } = buildRoseHead();
+                headGroup.position.copy(p3);
+                headGroup.rotation.set(cfg.rotX, (index - 3) * 0.15, cfg.rotZ);
+                headGroup.scale.setScalar(0.0001);
+                roseRoot.add(headGroup);
+
+                // Hitbox sferica invisibile maggiorata per un tocco mobile infallibile
+                const hitboxGeo = new THREE.SphereGeometry(0.68, 12, 12);
+                const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
+                const hitboxMesh = new THREE.Mesh(hitboxGeo, hitboxMat);
+                hitboxMesh.position.set(0, 0.22, 0);
+                hitboxMesh.userData = { roseIndex: index };
+                headGroup.add(hitboxMesh);
+                hitTargets.push(hitboxMesh);
+
+                roses.push({
+                    index,
+                    cfg,
+                    roseRoot,
+                    stemGeo,
+                    totalIndices,
+                    headGroup,
+                    petalsData,
+                    coreLight,
+                    attachments,
+                    startDelayMs,
+                    stemDurationMs,
+                    bloomProgress: 0,
+                    clickPulse: 0,
+                    hoverFactor: 0,
+                    swayPhase: Math.random() * Math.PI * 2,
+                    swaySpeed: 1.1 + Math.random() * 0.45
+                });
+            });
+
+            // Mostra il messaggio principale quando tutte le rose sono sbocciate
+            setTimeout(() => {
+                mainMessage.classList.add('show');
+                hudTop.classList.add('visible');
+            }, 5200);
+
+            // ============================================================================
+            // 6. SISTEMA DI LUCCIOLE E BOKEH 3D SOSPESI NELLO SPAZIO
+            // ============================================================================
+            function createGlowParticleTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                grad.addColorStop(0.25, 'rgba(255, 120, 165, 0.85)');
+                grad.addColorStop(0.6, 'rgba(255, 30, 90, 0.25)');
+                grad.addColorStop(1, 'rgba(255, 0, 60, 0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 64, 64);
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            const particleCount = 95;
+            const particleGeo = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(particleCount * 3);
+            const particleSpeeds = [];
+
+            for (let i = 0; i < particleCount; i++) {
+                particlePositions[i * 3]     = (Math.random() - 0.5) * 14;
+                particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 12;
+                particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 6 - 1;
+                particleSpeeds.push({
+                    vy: 0.25 + Math.random() * 0.45,
+                    vx: (Math.random() - 0.5) * 0.2,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            const particleMat = new THREE.PointsMaterial({
+                size: 0.28,
+                map: createGlowParticleTexture(),
+                transparent: true,
+                opacity: 0.85,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+
+            const firefliesPoints = new THREE.Points(particleGeo, particleMat);
+            scene.add(firefliesPoints);
+
+            // ============================================================================
+            // 7. SISTEMA DI PETALI 3D CHE CADONO DOLCEMENTE AL TOCCO
+            // ============================================================================
+            const fallingPetals = [];
+
+            function spawnFallingPetals3D(originWorldPos) {
+                for (let i = 0; i < 5; i++) {
+                    const pMesh = new THREE.Mesh(sharedPetalGeo, petalMaterials[1]);
+                    const scale = 0.16 + Math.random() * 0.12;
+                    pMesh.scale.setScalar(scale);
+                    pMesh.position.copy(originWorldPos);
+                    pMesh.position.x += (Math.random() - 0.5) * 0.35;
+                    pMesh.position.y += (Math.random() - 0.5) * 0.25;
+                    pMesh.position.z += (Math.random() - 0.5) * 0.35;
+
+                    pMesh.rotation.set(
+                        Math.random() * Math.PI,
+                        Math.random() * Math.PI,
+                        Math.random() * Math.PI
+                    );
+
+                    scene.add(pMesh);
+                    fallingPetals.push({
+                        mesh: pMesh,
+                        vy: -(0.55 + Math.random() * 0.45),
+                        vx: (Math.random() - 0.5) * 0.6,
+                        vz: (Math.random() - 0.5) * 0.4,
+                        rx: (Math.random() - 0.5) * 2.5,
+                        ry: (Math.random() - 0.5) * 2.5,
+                        swayOffset: Math.random() * 10,
+                        age: 0,
+                        maxAge: 4.5
+                    });
+                }
+            }
+
+            // Scintille luminose 2D ancorate alla proiezione schermo esatta della rosa
+            const sparkleColors = ['#ff4d79', '#ff1a53', '#ffebf0', '#ffccd8', '#ff99b8'];
+            function createCinematicSparkles(screenX, screenY) {
+                for (let i = 0; i < 22; i++) {
+                    const spark = document.createElement('div');
+                    spark.classList.add('sparkle');
+                    document.body.appendChild(spark);
+
+                    spark.style.left = `${screenX}px`;
+                    spark.style.top = `${screenY}px`;
+
+                    const size = Math.random() * 5.5 + 3;
+                    spark.style.width = `${size}px`;
+                    spark.style.height = `${size}px`;
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = Math.random() * 95 + 40;
+                    const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+
+                    spark.style.setProperty('--tx', `${Math.cos(angle) * radius}px`);
+                    spark.style.setProperty('--ty', `${Math.sin(angle) * radius}px`);
+                    spark.style.setProperty('--c', color);
+
+                    setTimeout(() => spark.remove(), 1150);
+                }
+            }
+
+            // ============================================================================
+            // 8. INTERAZIONE (RAYCASTER 3D, TOUCH & MOUSE, RESPONSIVE CAMERA)
+            // ============================================================================
+            const raycaster = new THREE.Raycaster();
+            const pointer = new THREE.Vector2();
+            const targetCameraParallax = new THREE.Vector2(0, 0);
+            let hoveredRoseIndex = -1;
+
+            function updateCameraResponsiveness() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                const aspect = width / height;
+
+                camera.aspect = aspect;
+
+                // Adatta distanza e FOV affinché tutte e 7 le rose entrino sempre nello schermo
+                if (aspect < 0.65) {
+                    // Smartphone verticale stretto
+                    camera.fov = 56;
+                    camera.position.set(0, 0.35, 11.4);
+                } else if (aspect < 1.0) {
+                    // Smartphone grande / Tablet verticale
+                    camera.fov = 50;
+                    camera.position.set(0, 0.4, 9.8);
+                } else {
+                    // Desktop / Orizzontale
+                    camera.fov = 42;
+                    camera.position.set(0, 0.45, 8.2);
+                }
+
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+
+            window.addEventListener('resize', updateCameraResponsiveness);
+            updateCameraResponsiveness();
+
+            // Converte coordinate 3D del cuore della rosa in coordinate pixel dello schermo (FIX coordinate mobile)
+            function getRoseScreenPosition(rose) {
+                const worldPos = new THREE.Vector3();
+                rose.headGroup.getWorldPosition(worldPos);
+                worldPos.y += 0.2 * rose.cfg.scale;
+                worldPos.project(camera);
+
+                return {
+                    x: (worldPos.x * 0.5 + 0.5) * window.innerWidth,
+                    y: (-(worldPos.y * 0.5) + 0.5) * window.innerHeight,
+                    worldPos: rose.headGroup.getWorldPosition(new THREE.Vector3())
+                };
+            }
+
+            function triggerRoseInteraction(roseIndex) {
+                const rose = roses[roseIndex];
+                if (!rose || rose.bloomProgress < 0.35) return; // Attende che il bocciolo sia visibile
+
+                // Impulso elastico sul bocciolo
+                rose.clickPulse = 1.0;
+
+                // Accende il bagliore magico interno della rosa raccolta
+                discoveredRoses.add(roseIndex);
+                discoveredCountEl.textContent = discoveredRoses.size;
+
+                // Calcola il centro esatto sullo schermo della rosa toccata
+                const posInfo = getRoseScreenPosition(rose);
+                createCinematicSparkles(posInfo.x, posInfo.y);
+                spawnFallingPetals3D(posInfo.worldPos);
+
+                // Frase biunivoca associata a questa specifica rosa
+                const secretPhrase = phrases[roseIndex];
+                const allCollectedNote = discoveredRoses.size === 7
+                    ? `Rosa ${roseIndex + 1} di 7 • Hai svelato l'intero giardino`
+                    : `Segreto della Rosa ${roseIndex + 1}`;
+
+                popupMessage.innerHTML = `
+                    <span class="popup-quote">“${secretPhrase}”</span>
+                    <span class="popup-sub">${allCollectedNote}</span>
+                `;
+                popupMessage.classList.add('show');
+                mainMessage.classList.add('fade-away');
+
+                clearTimeout(popupTimeout);
+                popupTimeout = setTimeout(() => {
+                    popupMessage.classList.remove('show');
+                }, 4800);
+            }
+
+            // Gestione unificata Pointer (Mouse + Touch Mobile)
+            window.addEventListener('pointermove', (e) => {
+                const nx = (e.clientX / window.innerWidth) * 2 - 1;
+                const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                targetCameraParallax.x = nx * 0.42;
+                targetCameraParallax.y = ny * 0.25;
+
+                if (e.pointerType === 'mouse') {
+                    pointer.set(nx, ny);
+                    raycaster.setFromCamera(pointer, camera);
+                    const intersects = raycaster.intersectObjects(hitTargets, false);
+
+                    if (intersects.length > 0) {
+                        const idx = intersects[0].object.userData.roseIndex;
+                        hoveredRoseIndex = idx;
+                        container.style.cursor = 'pointer';
+                    } else {
+                        hoveredRoseIndex = -1;
+                        container.style.cursor = 'default';
+                    }
+                }
+            }, { passive: true });
+
+            window.addEventListener('pointerdown', (e) => {
+                const nx = (e.clientX / window.innerWidth) * 2 - 1;
+                const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                targetCameraParallax.x = nx * 0.35;
+                targetCameraParallax.y = ny * 0.2;
+
+                pointer.set(nx, ny);
+                raycaster.setFromCamera(pointer, camera);
+                const intersects = raycaster.intersectObjects(hitTargets, false);
+
+                if (intersects.length > 0) {
+                    const roseIndex = intersects[0].object.userData.roseIndex;
+                    triggerRoseInteraction(roseIndex);
+                }
+            });
+
+            // ============================================================================
+            // 9. LOOP DI ANIMAZIONE CINEMATOGRAFICA A 60FPS
+            // ============================================================================
+            function easeOutCubic(x) {
+                return 1 - Math.pow(1 - x, 3);
+            }
+
+            function easeOutBack(x) {
+                const c1 = 1.70158;
+                const c3 = c1 + 1;
+                return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+            }
+
+            const clock = new THREE.Clock();
+            const startTime = performance.now();
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const dt = Math.min(clock.getDelta(), 0.1);
+                const elapsedSec = clock.getElapsedTime();
+                const nowMs = performance.now() - startTime;
+
+                // 1. Parallasse morbida della camera
+                gardenGroup.rotation.y += (targetCameraParallax.x * 0.18 - gardenGroup.rotation.y) * 0.05;
+                gardenGroup.rotation.x += (-targetCameraParallax.y * 0.1 - gardenGroup.rotation.x) * 0.05;
+
+                // 2. Aggiornamento crescita steli, foglie, boccioli e respiro organico
+                roses.forEach((rose) => {
+                    const localTime = nowMs - rose.startDelayMs;
+
+                    if (localTime > 0) {
+                        // A) Progresso crescita stelo dal basso verso l'alto
+                        const rawStemProg = Math.min(1, localTime / rose.stemDurationMs);
+                        const stemProg = easeOutCubic(rawStemProg);
+
+                        const activeRings = Math.floor(stemProg * stemTubularSegments);
+                        rose.stemGeo.setDrawRange(0, activeRings * stemRadialSegments * 6);
+
+                        // B) Spuntare sincronizzato di foglie e spine non appena lo stelo le raggiunge
+                        rose.attachments.forEach((att) => {
+                            if (stemProg >= att.threshold) {
+                                att.currentScale += (att.targetScale - att.currentScale) * 0.12;
+                                att.group.scale.setScalar(att.currentScale);
+                            }
+                        });
+
+                        // C) Schiusura progressiva dei 28 petali all'arrivo dello stelo in cima
+                        if (rawStemProg > 0.72) {
+                            const bloomRaw = Math.min(1, (localTime - rose.stemDurationMs * 0.72) / 2400);
+                            rose.bloomProgress = easeOutBack(bloomRaw);
+
+                            // Hover & Click pulse
+                            const isHovered = hoveredRoseIndex === rose.index ? 1 : 0;
+                            rose.hoverFactor += (isHovered - rose.hoverFactor) * 0.12;
+
+                            if (rose.clickPulse > 0.001) {
+                                rose.clickPulse *= 0.90;
+                            } else {
+                                rose.clickPulse = 0;
+                            }
+
+                            // Respiro asincrono continuo (senza alcuno scatto di rotazione)
+                            const breatheScale = 1 + Math.sin(elapsedSec * rose.swaySpeed + rose.swayPhase) * 0.028;
+                            const interactionScale = 1 + rose.hoverFactor * 0.08 + Math.sin(rose.clickPulse * Math.PI) * 0.16;
+                            const finalScale = rose.cfg.scale * Math.max(0.001, rose.bloomProgress) * breatheScale * interactionScale;
+
+                            rose.headGroup.scale.setScalar(finalScale);
+
+                            // Apertura petalo per petalo (gli esterni si aprono con più ampiezza degli interni)
+                            const openFactor = Math.min(1, bloomRaw * 1.15);
+                            const breathePetal = Math.sin(elapsedSec * rose.swaySpeed + rose.swayPhase) * 0.035;
+                            const pulsePetal = Math.sin(rose.clickPulse * Math.PI) * 0.14;
+
+                            rose.petalsData.forEach((p) => {
+                                const targetTilt = THREE.MathUtils.lerp(p.closedTilt, p.openTilt, easeOutCubic(openFactor))
+                                    + (breathePetal + pulsePetal) * p.layerRatio;
+                                p.pivot.rotation.x = -targetTilt;
+                            });
+
+                            // Illuminazione del cuore della rosa (più intensa se già scoperta o in hover)
+                            const isDiscovered = discoveredRoses.has(rose.index);
+                            const targetLightIntensity = (isDiscovered ? 2.2 : 0.4) + rose.hoverFactor * 1.8 + rose.clickPulse * 4.5;
+                            rose.coreLight.intensity += (targetLightIntensity - rose.coreLight.intensity) * 0.1;
+                        }
+                    }
+
+                    // D) Ondeggiamento naturale al vento dell'intera rosa
+                    const windSwayZ = Math.sin(elapsedSec * rose.swaySpeed + rose.swayPhase) * 0.018;
+                    const windSwayX = Math.cos(elapsedSec * (rose.swaySpeed * 0.8) + rose.swayPhase) * 0.012;
+                    rose.roseRoot.rotation.z = windSwayZ;
+                    rose.roseRoot.rotation.x = windSwayX;
+                });
+
+                // 3. Animazione Lucciole fluttuanti
+                const posArr = particleGeo.attributes.position.array;
+                for (let i = 0; i < particleCount; i++) {
+                    const sp = particleSpeeds[i];
+                    posArr[i * 3 + 1] += sp.vy * dt;
+                    posArr[i * 3]     += Math.sin(elapsedSec * 1.2 + sp.phase) * 0.005 + sp.vx * dt;
+
+                    if (posArr[i * 3 + 1] > 6.5) {
+                        posArr[i * 3 + 1] = -6.0;
+                        posArr[i * 3] = (Math.random() - 0.5) * 14;
+                    }
+                }
+                particleGeo.attributes.position.needsUpdate = true;
+
+                // 4. Fisica leggera dei petali 3D che cadono al tocco
+                for (let i = fallingPetals.length - 1; i >= 0; i--) {
+                    const fp = fallingPetals[i];
+                    fp.age += dt;
+
+                    fp.mesh.position.y += fp.vy * dt;
+                    fp.mesh.position.x += (fp.vx + Math.sin(elapsedSec * 2.5 + fp.swayOffset) * 0.35) * dt;
+                    fp.mesh.position.z += fp.vz * dt;
+
+                    fp.mesh.rotation.x += fp.rx * dt;
+                    fp.mesh.rotation.y += fp.ry * dt;
+
+                    if (fp.age > fp.maxAge || fp.mesh.position.y < -6.5) {
+                        scene.remove(fp.mesh);
+                        fallingPetals.splice(i, 1);
+                    }
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+        })();
+    </script>
+</body>
+</html>
